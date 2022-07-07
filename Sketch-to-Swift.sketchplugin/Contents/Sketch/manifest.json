@@ -1,0 +1,23 @@
+{
+  "author" : "Zachary Morden",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "",
+      "name" : "Get Swift Colors",
+      "identifier" : "swiftToSketch"
+    }
+  ],
+  "menu": {
+    "isRoot": true,
+    "items": [
+      "swiftToSketch"
+    ]
+  },
+  "identifier" : "dev.morden.sketch.sketchToSwift",
+  "version" : "1.1",
+  "description" : "A plugin capable of exporting SwiftUI and UIKit Color initializers from Sketch layers.",
+  "authorEmail" : "78518056+SetKu@users.noreply.github.com",
+  "name" : "Sketch to Swift"
+}

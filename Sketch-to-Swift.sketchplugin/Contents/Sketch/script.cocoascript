@@ -1,0 +1,224 @@
+@import "library.cocoascript";
+
+var onRun = function(context) {
+  var documentName = context.document.displayName();
+  var selectedLayers = context.selection;
+  var selectedCount = selectedLayers.count();
+  var str = "";
+
+  if (selectedCount == 0) {
+    showMessage("No layers are selected to find colors from.").runModal();
+  } else {
+    // Show dialog
+    var alert = createDialog();
+    var options = alertResponse(alert, alert.runModal());
+
+    if (!options.uiKit && !options.swiftUI) {
+      showMessage("Either UIKit or SwiftUI must be checked to export.").runModal();
+      return
+    }
+
+    if (options.include) {
+      str = writeText(selectedLayers, true, options);
+    } else {
+      str = writeText(selectedLayers, false, options);
+    }
+
+    if (options.exportFile) {
+      var savedFile = writeTextToFile(str);
+      if (savedFile) {
+        showMessage("File saved.").runModal();
+      } else {
+        showMessage("File not saved.").runModal();
+      }
+    } else {
+      copyToClipBoard(str);
+    }
+  }
+};
+
+function convertUIColor(color) {
+  var red = color.red().toFixed(3).toString();
+  var green = color.green().toFixed(3).toString();
+  var blue = color.blue().toFixed(3).toString();
+  var alpha = color.alpha().toFixed(3).toString();
+
+  return "UIColor(red: " + red + ", green: " + green + ", blue: " + blue + ", alpha: " + alpha + ")";
+}
+
+function convertSwiftUIColor(color) {
+  var red = color.red().toFixed(3).toString();
+  var green = color.green().toFixed(3).toString();
+  var blue = color.blue().toFixed(3).toString();
+  var alpha = color.alpha().toFixed(3).toString();
+
+  return "Color(red: " + red + ", green: " + green + ", blue: " + blue + ", opacity: " + alpha + ")";
+}
+
+function makeEnumCaseName(string) {
+  var str = string.charAt(0).toLowerCase() + string.substr(1);
+
+  var invalid = false;
+  var invalidCharacters = [
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+  ];
+
+  for (var i = 0; i < invalidCharacters.length; i++) {
+    let char = invalidCharacters[i];
+
+    if (str[0] == char) {
+      str = "_" + str
+      break
+    }
+  }
+
+  return str;
+}
+
+function writeText(selectedLayers, includeComments, options) {
+  var newLine = "\n";
+  var textString = "";
+
+  if (includeComments) {
+    textString += "//"
+    textString += newLine
+    textString += "// Generated automatically by Sketch to Swift."
+    textString += newLine
+    textString += "// https://github.com/nahitheper/SwiftColorPalette"
+    textString += newLine
+    textString += "//"
+    textString += newLine
+  }
+
+  if (options.uiKit && !options.swiftUI) {
+    textString += "import UIKit"
+  } else if (!options.uiKit && options.swiftUI) {
+    textString += "import SwiftUI"
+  } else {
+    textString += "import UIKit"
+    textString += newLine
+    textString += "import SwiftUI"
+  }
+
+  textString += newLine
+  textString += newLine
+  textString += "enum Palette {"
+
+  if (options.uiKit) {
+    for (var i = 0; i < selectedLayers.count(); i++) {
+      var layer = selectedLayers[i];
+      textString += newLine
+      textString += "    static let " + makeEnumCaseName(layer.name()) + "UI = " +  convertUIColor(layer.style().fills().firstObject().color())
+    }
+  }
+
+  if (options.swiftUI) {
+    if (options.uiKit) {
+      textString += newLine
+      textString += "    "
+      textString += newLine
+    }
+
+    for (var i = 0; i < selectedLayers.count(); i++) {
+      var layer = selectedLayers[i];
+      textString += newLine
+      textString += "    static let " + makeEnumCaseName(layer.name()) + " = " +  convertSwiftUIColor(layer.style().fills().firstObject().color())
+    }
+  }
+
+  textString += newLine
+  textString += "}"
+  return textString;
+}
+
+function copyToClipBoard(text){
+  var pasteBoard = NSPasteboard.generalPasteboard();
+  pasteBoard.clearContents()
+  pasteBoard.writeObjects([text]);
+  showMessage("Successfully copied to clipboard.").runModal();
+}
+
+function writeTextToFile(text) {
+  var openPanel = [NSOpenPanel openPanel]
+  [openPanel setCanChooseDirectories:true]
+  [openPanel setCanChooseFiles:false]
+  [openPanel setCanCreateDirectories:false]
+  [openPanel setDirectoryURL:[NSURL fileURLWithPath:"~/Documents/"]]
+  [openPanel setTitle:"Choose a file"]
+  [openPanel setPrompt:"Choose"]
+  [openPanel runModal]
+  var directory = [openPanel filename];
+  var path = directory + "/Palette.swift";
+  
+  var result = false;
+
+  if (typeof path !== 'string') {
+    return result;
+  }
+
+  var nsstring = NSString.stringWithUTF8String(text);
+  result = [nsstring writeToFile:path atomically:1 encoding:NSUTF8StringEncoding error:null];
+  
+  if (!result) {
+      result = false;
+  } else {
+      result = true;
+  }
+
+  return result;
+}
+
+function alertResponse(alert, code) {
+  if (code == "1000") {
+    return {
+      exportFile: alert.viewAtIndex(0).state(),
+      uiKit: alert.viewAtIndex(1).state(),
+      swiftUI: alert.viewAtIndex(2).state()
+      //include: alert.viewAtIndex(1).state()
+    }
+  }
+
+  return null;
+}
+
+function createCheckbox(checkBoxLabel) {
+  var checkbox = NSButton.alloc().initWithFrame( NSMakeRect( 0, 0, 300, 18 ) );
+  checkbox.setButtonType( NSSwitchButton );
+  checkbox.setTitle( checkBoxLabel );
+  checkbox.setTag( checkBoxLabel );
+  checkbox.setState( false );
+
+  return checkbox;
+}
+
+function createDialog(){
+  var alert = COSAlertWindow.new();
+  alert.setMessageText("Sketch to Swift");
+  alert.setInformativeText("Export Options: ");
+
+  var exportFileCheckBox = createCheckbox("Export Swift file (instead of copying to clipboard)");
+  var uiKitCheckBox = createCheckbox("UIKit");
+  var swiftUICheckBox = createCheckbox("SwiftUI");
+
+  var includeHex = createCheckbox("Include Hex codes with comment.");
+
+  alert.addAccessoryView(exportFileCheckBox);
+  alert.addAccessoryView(uiKitCheckBox);
+  alert.addAccessoryView(swiftUICheckBox);
+
+  //alert.addAccessoryView(includeHex);
+  alert.addButtonWithTitle('OK');
+  alert.addButtonWithTitle('Cancel');
+
+  return alert;
+}
+
+function showMessage(informationText){
+  var alert = COSAlertWindow.new();
+
+  alert.setMessageText("Sketch to Swift");
+  alert.setInformativeText(informationText);
+  alert.addButtonWithTitle('OK');
+
+  return alert;
+}

@@ -1,45 +1,44 @@
-Swift Color Palette
-=============================
+# Sketch to Swift
 
-A SketchApp plugin that making color palette an enum in other words generates Swift Color Theme files from your Sketch documents.  
+A Sketch plugin that is able to quickly convert the colors from selected layers to Swift UIKit UIColor and SwiftUI Color initializers.
 
-Swift Color Palette plugin inspired by [**@NatashaTheRobot**](https://github.com/NatashaTheRobot) 's   [blog post](https://www.natashatherobot.com/swift-enum-no-cases/) 
+Plugin forked from Swift Color Palette by [Nahit Heper](https://github.com/nahitheper). The changes made to this extension are, for the most part, a cleanup of the code and extension of his implementation.
 
-Installation
-=============================
+## Installation
 
-[Download](https://github.com/nahitheper/SwiftColorPalette/archive/master.zip) and extract the contents of this repository. Then double-click the `SwiftColorPalette.sketchplugin` bundle to install the plugin.
-In [Sketch Toolbox](http://sketchtoolbox.com), search for 'Swift Color Palette' and tap Install.
+Download this project and extract the contents of this repository. Then double-click the `Sketch-to-Swift.sketchplugin` bundle to install the plugin.
 
-Short Demo
-=============================
+## Demo
 
-<img src="./demo.gif" width="100%" alt="Swift Color Palette" /> 
+<img src="./demo.gif" width="100%" alt="Sketch to Swift in Action" />
 
-Usage
-=============================
+## Usage
+
 * Rename color palette layer(s)
 * Select a layer(s)
-* Run using ```Plugins > Menu > Swift Color Palette```
-* Select a Export File (optional) or you can choose copy to clipboard.
+* Run using ```Plugins > Menu > Get Swift Colors```
+* Select whether you would like code for UIKit, SwiftUI, or both. You can also choose whether to copy the code to the clipboard or output a Swift file.
 * Click OK.
 
-Example Code
-=============================
+## Example Output
+
 ```swift
-enum ColorPalette {
-    static let lightGrayColor =  UIColor(red:0.737, green: 0.769, blue: 0.792, alpha: 1.000)
-    static let blueColor =  UIColor(red:0.353, green: 0.510, blue: 0.647, alpha: 1.000)
-    static let grayColor =  UIColor(red:0.373, green: 0.373, blue: 0.376, alpha: 1.000)
-    static let panelColor =  UIColor(red:0.212, green: 0.227, blue: 0.267, alpha: 1.000)
-    static let secondaryColor =  UIColor(red:0.141, green: 0.220, blue: 0.282, alpha: 1.000)
-    static let primaryColor =  UIColor(red:0.129, green: 0.133, blue: 0.145, alpha: 1.000)
+import UIKit
+import SwiftUI
+
+enum Palette {
+    static let primary900UI = UIColor(red: 0.119, green: 0.197, blue: 0.281, alpha: 1.000)
+    static let primary800UI = UIColor(red: 0.143, green: 0.258, blue: 0.384, alpha: 1.000)
+    static let primary700UI = UIColor(red: 0.179, green: 0.337, blue: 0.512, alpha: 1.000)
+    
+    static let primary900 = Color(red: 0.119, green: 0.197, blue: 0.281, opacity: 1.000)
+    static let primary800 = Color(red: 0.143, green: 0.258, blue: 0.384, opacity: 1.000)
+    static let primary700 = Color(red: 0.179, green: 0.337, blue: 0.512, opacity: 1.000)
 }
 ```
 
-Feedback
-=========
+## Feedback
 
-If you have any questions, find a bug, or have ideas for ways to improve the plugin, ping me on twitter: @nahitheper
+If you have any requests or find a bug, feel free to submit a pull request. Though, this project is not actively maintained.
 
 
